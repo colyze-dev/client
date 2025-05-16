@@ -7,8 +7,8 @@ import "react-quill/dist/quill.snow.css";
 
 export default function UpdatesPage() {
   useAuthGuard();
-  const { userInfo } = useContext(UserContext);
 
+  const { userInfo } = useContext(UserContext);
   const [authoredProjects, setAuthoredProjects] = useState([]);
   const [collabProjects, setCollabProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState("");
@@ -26,12 +26,15 @@ export default function UpdatesPage() {
     })
       .then((res) => res.json())
       .then((data) => {
-        const authored = data.filter((p) => p.author?._id === userInfo.id);
-        const collab = data.filter((p) =>
-          p.collaborators?.some((c) => c.user === userInfo.id)
+        const authored = data.filter((p) => p.author?._id === userInfo._id);
+        const collaborated = data.filter((p) =>
+          p.collaborators?.some((c) => c.user === userInfo._id)
         );
+
         setAuthoredProjects(authored);
-        const combined = [...new Map([...authored, ...collab].map((p) => [p._id, p])).values()];
+
+        // Union authored + collaborated without duplicates
+        const combined = [...new Map([...authored, ...collaborated].map((p) => [p._id, p])).values()];
         setCollabProjects(combined);
       });
   }, [userInfo]);
@@ -62,6 +65,7 @@ export default function UpdatesPage() {
     const res = await fetch(`${process.env.REACT_APP_API_URL}/updates/${projectId}`, {
       credentials: "include",
     });
+
     const data = await res.json();
     setUpdates(data?.updates || []);
     setGithubRepo(data?.githubLink || "");
