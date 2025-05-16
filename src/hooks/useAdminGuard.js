@@ -1,45 +1,19 @@
-import { useEffect, useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../userContext";
 
 export default function useAdminGuard() {
+  const { userInfo } = useContext(UserContext);
   const navigate = useNavigate();
-  const { userInfo, setUserInfo } = useContext(UserContext);
   const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
-    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
-
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
-    if (userInfo?.isAdmin === false) {
+    if (userInfo === undefined) return; // still loading
+    if (!userInfo || !userInfo.isAdmin) {
       setShowPopup(true);
-      setTimeout(() => navigate('/'), 3000);
-      return;
+      setTimeout(() => navigate("/login"), 2000); // optional delay for notice
     }
-
-    if (userInfo === null) {
-      fetch(`${process.env.REACT_APP_API_URL}/profile`, {
-        credentials: 'include',
-      }).then(res => res.json())
-        .then(data => {
-          if (!data.isAdmin) {
-            setUserInfo(data);
-            setShowPopup(true);
-            setTimeout(() => navigate('/'), 3000);
-          } else {
-            setUserInfo(data);
-          }
-        })
-        .catch(() => {
-          setShowPopup(true);
-          setTimeout(() => navigate('/'), 3000);
-        });
-    }
-  }, [navigate, userInfo, setUserInfo]);
+  }, [userInfo, navigate]);
 
   return showPopup;
 }
