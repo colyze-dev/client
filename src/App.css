@@ -4441,3 +4441,52 @@ header .nav-container {
 .floating-label {
   position: relative;
 }
+
+/* --- Collaborator Contact Card --- */
+.contact-card {
+  background: rgba(22, 27, 34, 0.95);
+  border: 1px solid #30363d;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(88, 166, 255, 0.1);
+  padding: 30px;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.3s ease;
+}
+
+.contact-card h2 {
+  color: #58a6ff;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  border-bottom: 1px solid #30363d;
+  padding-bottom: 10px;
+}
+
+.contact-details {
+  list-style: none;
+  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.contact-details li {
+  font-size: 1rem;
+  color: #c9d1d9;
+}
+
+.contact-details strong {
+  color: #8b949e;
+  margin-right: 6px;
+  display: inline-block;
+  width: 80px;
+}
+
+.contact-details a {
+  color: #58a6ff;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.contact-details a:hover {
+  color: #1f6feb;
+}
