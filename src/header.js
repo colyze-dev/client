@@ -16,14 +16,19 @@ export default function Header() {
     });
   }, [setUserInfo]);
 
-  const logout = () => {
-    fetch(`${process.env.REACT_APP_API_URL}/logout`, {
+  const logout = async () => {
+  try {
+    await fetch(`${process.env.REACT_APP_API_URL}/logout`, {
       credentials: "include",
       method: "POST",
     });
-    setUserInfo(null);
-    window.location.href = "/";
-  };
+
+    setUserInfo(null);           // Clear context
+    window.location.href = "/";  // Redirect to home
+  } catch (err) {
+    console.error("Logout failed:", err);
+  }
+};
 
   const username = userInfo?.username;
   const name = userInfo?.name;
