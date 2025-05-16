@@ -15,7 +15,7 @@ export default function CreatePost() {
   useAuthGuard();
   const navigate = useNavigate();
 
-  const [authChecked, setAuthChecked] = useState(false);
+  // const [authChecked, setAuthChecked] = useState(false);
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [content, setContent] = useState("");
@@ -27,18 +27,18 @@ export default function CreatePost() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    const token = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("token="))
-      ?.split("=")[1];
+  // useEffect(() => {
+  //   const token = document.cookie
+  //     .split("; ")
+  //     .find((row) => row.startsWith("token="))
+  //     ?.split("=")[1];
 
-    if (!token) {
-      navigate("/login");
-    } else {
-      setAuthChecked(true);
-    }
-  }, [navigate]);
+  //   if (!token) {
+  //     navigate("/login");
+  //   } else {
+  //     setAuthChecked(true);
+  //   }
+  // }, [navigate]);
 
 
   const availableTags = [
