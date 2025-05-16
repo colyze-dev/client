@@ -1,13 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../userContext";
 
 export default function useAuthGuard() {
   const navigate = useNavigate();
+  const { userInfo } = useContext(UserContext);
 
   useEffect(() => {
-    const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
-    if (!token) {
-      navigate('/login');
+    if (userInfo === null) {
+      // confirmed not logged in
+      navigate("/login");
     }
-  }, [navigate]);
+  }, [userInfo, navigate]);
 }
