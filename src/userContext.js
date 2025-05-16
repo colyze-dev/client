@@ -1,16 +1,17 @@
-import { createContext, useState, useEffect } from "react";
+// userContext.js
+import { createContext, useEffect, useState } from "react";
 
 export const UserContext = createContext({});
 
 export function UserContextProvider({ children }) {
-  const [userInfo, setUserInfo] = useState(undefined); // undefined = loading, null = not logged in
+  const [userInfo, setUserInfo] = useState(undefined); // undefined initially
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/profile`, {
       credentials: "include",
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Not logged in");
+        if (!res.ok) throw new Error("Unauthorized");
         return res.json();
       })
       .then((data) => setUserInfo(data))
