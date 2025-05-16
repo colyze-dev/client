@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import useAuthGuard from "../hooks/useAuthGuard";
 import { Link } from "react-router-dom";
+import { UserContext } from "../userContext";
 import {
   FaCheck,
   FaTimes,
@@ -17,6 +18,8 @@ export default function Collaborations() {
   const [authoredPosts, setAuthoredPosts] = useState([]);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("requests");
+
+  const { userInfo } = useContext(UserContext);
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/authored-requests`, {
@@ -44,18 +47,14 @@ export default function Collaborations() {
     })
       .then((res) => res.json())
       .then((data) => {
-        const token = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("token="))
-          ?.split("=")[1];
-        const userInfo = JSON.parse(atob(token?.split(".")[1] || "e30="));
+        const userId = userInfo?._id;
         const authored = data.filter(
-          (post) => post.author?._id === userInfo.id
+          (post) => post.author?._id === userId
         );
         setAuthoredPosts(authored);
       })
       .catch((err) => console.error("Error fetching authored posts:", err));
-  }, []);
+  }, [userInfo]);
 
   const handleAccept = async (requestId) => {
     try {
@@ -74,20 +73,20 @@ export default function Collaborations() {
   };
 
   const handleReject = async (requestId) => {
-  try {
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/collaborate/reject`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ requestId }),
-    });
-    if (response.ok) {
-      setRequests(requests.filter((req) => req._id !== requestId));
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/collaborate/reject`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestId }),
+      });
+      if (response.ok) {
+        setRequests(requests.filter((req) => req._id !== requestId));
+      }
+    } catch (err) {
+      console.error("Failed to reject request:", err);
     }
-  } catch (err) {
-    console.error("Failed to reject request:", err);
-  }
-};
+  };
 
   return (
     <main className="collaborations-page">
@@ -186,29 +185,26 @@ export default function Collaborations() {
                 <>
                   {myPosts.map((collab) => (
                     <div className="collab-card" key={collab._id}>
-                    <div
-                      className="collab-status"
-                      data-status={collab.project?.status?.toLowerCase?.() || ""}
+                      <div
+                        className="collab-status"
+                        data-status={collab.project?.status?.toLowerCase?.() || ""}
                       >
-                      {collab.project?.status || "Unknown"}
+                        {collab.project?.status || "Unknown"}
+                      </div>
+                      <h3>{collab.project?.title || "Untitled Project"}</h3>
+                      <div className="collab-tags">
+                        {collab.project?.tags?.map((tag, i) => (
+                          <span key={i} className="tag">{tag}</span>
+                        ))}
+                      </div>
+                      <Link
+                        to={`/post/${collab.project?._id}`}
+                        className="view-project-btn"
+                      >
+                        View Project
+                      </Link>
                     </div>
-                    <h3>{collab.project?.title || "Untitled Project"}</h3>
-                    <div className="collab-tags">
-                      {collab.project?.tags?.map((tag, i) => (
-                      <span key={i} className="tag">
-                      {tag}
-                      </span>
-                    ))}
-                  </div>
-                <Link
-                  to={`/post/${collab.project?._id}`}
-                  className="view-project-btn"
-                >
-                  View Project
-                </Link>
-              </div>
-            ))}
-
+                  ))}
 
                   {authoredPosts.length > 0 && (
                     <div className="authored-projects">

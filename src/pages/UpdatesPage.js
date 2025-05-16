@@ -30,7 +30,7 @@ export default function UpdatesPage() {
   };
 
   useEffect(() => {
-    const userId = getUserId();
+    const userId = userInfo?._id;
     if (!userId) return;
 
     fetch(`${process.env.REACT_APP_API_URL}/post`, { credentials: "include" })
