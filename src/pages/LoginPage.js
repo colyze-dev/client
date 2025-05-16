@@ -10,42 +10,50 @@ export default function LoginPage() {
   const location = useLocation();
 
   async function login(ev) {
-    ev.preventDefault();
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
-      method: "POST",
-      body: JSON.stringify({ username, password }),
-      headers: { "Content-Type": "application/json" },
+  ev.preventDefault();
+
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
+    method: "POST",
+    body: JSON.stringify({ username, password }),
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  });
+
+  if (response.ok) {
+    // 🔁 NEW: Refetch /profile to get complete user info
+    const profileRes = await fetch(`${process.env.REACT_APP_API_URL}/profile`, {
       credentials: "include",
     });
 
-    if (response.ok) {
-      const userInfo = await response.json();
-      setUserInfo(userInfo);
-      if (userInfo.isAdmin) {
-        window.location.href = "/admin";
-      } else {
-        // Get the redirect path from location state
-        let redirectPath = "/ideas"; // default path
-
-        if (location.state?.from === "collaboration") {
-          redirectPath = "/collaboration";
-        } else if (
-          location.state?.from === "project" &&
-          location.state?.projectId
-        ) {
-          redirectPath = `/post/${location.state.projectId}`;
-        }
-
-        window.location.href = redirectPath;
-      }
-    } else {
-      alert("Login failed");
+    if (!profileRes.ok) {
+      alert("Failed to load user profile");
+      return;
     }
-  }
 
-  if (redirect) {
-    return <Navigate to={"/"} />;
+    const profileData = await profileRes.json();
+    setUserInfo(profileData);
+
+    if (profileData.isAdmin) {
+      window.location.href = "/admin";
+    } else {
+      let redirectPath = "/ideas";
+
+      if (location.state?.from === "collaboration") {
+        redirectPath = "/collaboration";
+      } else if (
+        location.state?.from === "project" &&
+        location.state?.projectId
+      ) {
+        redirectPath = `/post/${location.state.projectId}`;
+      }
+
+      window.location.href = redirectPath;
+    }
+  } else {
+    alert("Login failed");
   }
+}
+
 
   return (
     <div className="auth-container">
