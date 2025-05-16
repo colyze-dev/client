@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import useAuthGuard from "../hooks/useAuthGuard";
 import ReactQuill from "react-quill";
 import { FaRocket, FaClipboardList } from "react-icons/fa";
-import 'react-quill/dist/quill.snow.css';
+import { UserContext } from "../userContext";
+import "react-quill/dist/quill.snow.css";
 
 export default function UpdatesPage() {
   useAuthGuard();
+  const { userInfo } = useContext(UserContext);
 
   const [authoredProjects, setAuthoredProjects] = useState([]);
   const [collabProjects, setCollabProjects] = useState([]);
@@ -16,34 +18,23 @@ export default function UpdatesPage() {
   const [updates, setUpdates] = useState([]);
   const [tab, setTab] = useState("submit");
 
-  const getUserId = () => {
-    const token = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("token="))
-      ?.split("=")[1];
-    if (!token) return null;
-    try {
-      return JSON.parse(atob(token.split(".")[1]))?.id;
-    } catch {
-      return null;
-    }
-  };
-
   useEffect(() => {
-    const userId = userInfo?._id;
-    if (!userId) return;
+    if (!userInfo) return;
 
-    fetch(`${process.env.REACT_APP_API_URL}/post`, { credentials: "include" })
+    fetch(`${process.env.REACT_APP_API_URL}/post`, {
+      credentials: "include",
+    })
       .then((res) => res.json())
       .then((data) => {
-        const authored = data.filter((p) => p.author?._id === userId);
+        const authored = data.filter((p) => p.author?._id === userInfo.id);
         const collab = data.filter((p) =>
-          p.collaborators?.some((c) => c.user === userId)
+          p.collaborators?.some((c) => c.user === userInfo.id)
         );
         setAuthoredProjects(authored);
-        setCollabProjects([...new Map([...authored, ...collab].map((p) => [p._id, p])).values()]);
+        const combined = [...new Map([...authored, ...collab].map((p) => [p._id, p])).values()];
+        setCollabProjects(combined);
       });
-  }, []);
+  }, [userInfo]);
 
   const handleSubmit = async () => {
     if (!selectedProject || !summary.trim()) {
@@ -67,17 +58,14 @@ export default function UpdatesPage() {
     }
   };
 
-const fetchUpdates = async (projectId) => {
-  const res = await fetch(`${process.env.REACT_APP_API_URL}/updates/${projectId}`, {
-    credentials: "include",
-  });
-
-  const data = await res.json();
-  setUpdates(data?.updates || []);
-  setGithubRepo(data?.githubLink || ""); // ✅ Set the repo link
-};
-
-
+  const fetchUpdates = async (projectId) => {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/updates/${projectId}`, {
+      credentials: "include",
+    });
+    const data = await res.json();
+    setUpdates(data?.updates || []);
+    setGithubRepo(data?.githubLink || "");
+  };
 
   return (
     <main className="collaborations-page">
@@ -110,49 +98,44 @@ const fetchUpdates = async (projectId) => {
             </div>
 
             <div className="form-section">
-  <div>
-    <label htmlFor="projectSelect">Select Project</label>
-    <select
-      id="projectSelect"
-      value={selectedProject}
-      onChange={(e) => setSelectedProject(e.target.value)}
-    >
-      <option value="">Select your project</option>
-      {authoredProjects.map((p) => (
-        <option key={p._id} value={p._id}>
-          {p.title}
-        </option>
-      ))}
-    </select>
-  </div>
+              <div>
+                <label htmlFor="projectSelect">Select Project</label>
+                <select
+                  id="projectSelect"
+                  value={selectedProject}
+                  onChange={(e) => setSelectedProject(e.target.value)}
+                >
+                  <option value="">Select your project</option>
+                  {authoredProjects.map((p) => (
+                    <option key={p._id} value={p._id}>
+                      {p.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-  <div>
-    <label htmlFor="summary">Update Summary</label>
-    <ReactQuill
-      value={summary}
-      onChange={setSummary}
-    />
-  </div>
+              <div>
+                <label htmlFor="summary">Update Summary</label>
+                <ReactQuill value={summary} onChange={setSummary} />
+              </div>
 
-  <div>
-    <label htmlFor="github">GitHub Link</label>
-    <input
-      id="github"
-      type="url"
-      placeholder="https://github.com/yourrepo"
-      value={githubLink}
-      onChange={(e) => setGithubLink(e.target.value)}
-    />
-  </div>
+              <div>
+                <label htmlFor="github">GitHub Link</label>
+                <input
+                  id="github"
+                  type="url"
+                  placeholder="https://github.com/yourrepo"
+                  value={githubLink}
+                  onChange={(e) => setGithubLink(e.target.value)}
+                />
+              </div>
 
- <div className="text-center mt-4">
-  <button className="collab-request-btn small-btn" onClick={handleSubmit}>
-    Submit Update
-  </button>
-</div>
-
-</div>
-
+              <div className="text-center mt-4">
+                <button className="collab-request-btn small-btn" onClick={handleSubmit}>
+                  Submit Update
+                </button>
+              </div>
+            </div>
           </section>
         ) : (
           <section className="collab-section collaborations-section">
@@ -180,37 +163,38 @@ const fetchUpdates = async (projectId) => {
               </select>
 
               {updates.length === 0 ? (
-  <div className="empty-state">
-    <FaClipboardList className="empty-icon" />
-    <p>No updates available for this project yet.</p>
-  </div>
-) : (
-  <div className="update-wrapper">
-   <div className="github-badge-wrapper">
-  {githubRepo ? (
-    <a
-      href={githubRepo.startsWith("http") ? githubRepo : `https://${githubRepo}`}
-      target="_blank"
-      rel="noreferrer"
-      className="github-badge"
-    >
-      🔗 View GitHub Repo
-    </a>
-  ) : (
-    <p className="github-fallback">No GitHub repo added for this project.</p>
-  )}
-</div>
-    <ul className="update-list">
-      {updates.map((u, idx) => (
-        <li key={idx} className="update-item">
-          <div dangerouslySetInnerHTML={{ __html: u.summary }} />
-          <p className="update-time">{new Date(u.createdAt).toLocaleString()}</p>
-        </li>
-      ))}
-    </ul>
-  </div>
-)}
-
+                <div className="empty-state">
+                  <FaClipboardList className="empty-icon" />
+                  <p>No updates available for this project yet.</p>
+                </div>
+              ) : (
+                <div className="update-wrapper">
+                  <div className="github-badge-wrapper">
+                    {githubRepo ? (
+                      <a
+                        href={githubRepo.startsWith("http") ? githubRepo : `https://${githubRepo}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="github-badge"
+                      >
+                        🔗 View GitHub Repo
+                      </a>
+                    ) : (
+                      <p className="github-fallback">No GitHub repo added for this project.</p>
+                    )}
+                  </div>
+                  <ul className="update-list">
+                    {updates.map((u, idx) => (
+                      <li key={idx} className="update-item">
+                        <div dangerouslySetInnerHTML={{ __html: u.summary }} />
+                        <p className="update-time">
+                          {new Date(u.createdAt).toLocaleString()}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </section>
         )}
