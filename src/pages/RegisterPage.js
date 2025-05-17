@@ -54,7 +54,7 @@ export default function RegisterPage() {
         />
         <input
           type="email"
-          placeholder="Email"
+          placeholder="Official Email"
           value={email}
           onChange={(ev) => setEmail(ev.target.value)}
           required

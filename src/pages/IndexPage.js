@@ -25,26 +25,32 @@ export default function IndexPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/post`)
-      .then((response) => response.json())
-      .then((data) => {
-        const sorted = data.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
+  fetch(`${process.env.REACT_APP_API_URL}/post`)
+    .then((response) => response.json())
+    .then((data) => {
+      const sorted = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       const latestSix = sorted.slice(0, 6);
 
-        setPosts(latestSix);
-        setStats({
-          totalProjects: data.length,
-          activeCollaborations: data.filter(
-            (post) => post.status === "In Progress"
-          ).length,
-          successStories: data.filter((post) => post.status === "Completed")
-            .length,
-          communityMembers: Math.floor(data.length * 2.5),
-        });
-      });
-  }, []);
+      setPosts(latestSix);
+      setStats((prev) => ({
+        ...prev,
+        totalProjects: data.length,
+        activeCollaborations: data.filter((post) => post.status === "In Progress").length,
+        successStories: data.filter((post) => post.status === "Completed").length,
+      }));
+    });
+
+  // Fetch user count separately
+  fetch(`${process.env.REACT_APP_API_URL}/users/count`)
+    .then((res) => res.json())
+    .then((data) => {
+      setStats((prev) => ({
+        ...prev,
+        communityMembers: data.count,
+      }));
+    });
+}, []);
+
 
   const projectsPerSlide = 3;
   const totalSlides = Math.ceil(posts.length / projectsPerSlide);
