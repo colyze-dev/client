@@ -37,14 +37,14 @@ export default function AboutUsPage() {
             <img src="/team/derick.png" alt="Derick" className="team-avatar" />
             <div>
               <h3>Derick Johnson</h3>
-              <p>Co-Founder & CEO</p>
+              {/* <p>Co-Founder & CEO</p> */}
             </div>
           </div>
           <div className="team-card">
             <img src="/team/prateek.png" alt="Prateek" className="team-avatar" />
             <div>
               <h3>Prateek Kumar</h3>
-              <p>Co-Founder & CFO</p>
+              {/* <p>Co-Founder & CFO</p> */}
             </div>
           </div>
         </div>  
