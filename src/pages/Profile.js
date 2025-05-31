@@ -20,8 +20,8 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const endpoint = username
-      ? `${process.env.REACT_APP_API_URL}/profile/${username}`
-      : `${process.env.REACT_APP_API_URL}/profile`;
+      ? `${process.env.REACT_APP_API_URL}/api/profile/${username}`
+      : `${process.env.REACT_APP_API_URL}/api/profile`;
 
     fetch(endpoint, { credentials: "include" })
       .then((response) => {
@@ -36,7 +36,7 @@ export default function ProfilePage() {
       })
       .catch((error) => console.error("Error fetching profile:", error));
 
-    fetch(`${process.env.REACT_APP_API_URL}/recent-activity`, { credentials: "include" })
+    fetch(`${process.env.REACT_APP_API_URL}/api/recent-activity`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setRecentActivity(data || []))
       .catch(() => setRecentActivity([]));
@@ -256,7 +256,7 @@ export default function ProfilePage() {
                   className="profile-action-btn"
                   onClick={async () => {
                     try {
-                      await fetch(`${process.env.REACT_APP_API_URL}/logout`, {
+                      await fetch(`${process.env.REACT_APP_API_URL}/api/logout`, {
                         credentials: "include",
                         method: "POST",
                       });

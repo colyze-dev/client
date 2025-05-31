@@ -1,59 +1,65 @@
 import React, { useState, useContext } from "react";
-import { Navigate, Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { UserContext } from "../userContext";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [redirect, setRedirect] = useState(false);
   const { setUserInfo } = useContext(UserContext);
   const location = useLocation();
+  const navigate = useNavigate();
 
   async function login(ev) {
-  ev.preventDefault();
+    ev.preventDefault();
 
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
-    method: "POST",
-    body: JSON.stringify({ username, password }),
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-  });
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/login`, {
+        method: "POST",
+        body: JSON.stringify({ username, password }),
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
 
-  if (response.ok) {
-    // 🔁 NEW: Refetch /profile to get complete user info
-    const profileRes = await fetch(`${process.env.REACT_APP_API_URL}/profile`, {
-      credentials: "include",
-    });
-
-    if (!profileRes.ok) {
-      alert("Failed to load user profile");
-      return;
-    }
-
-    const profileData = await profileRes.json();
-    setUserInfo(profileData);
-
-    if (profileData.isAdmin) {
-      window.location.href = "/admin";
-    } else {
-      let redirectPath = "/ideas";
-
-      if (location.state?.from === "collaboration") {
-        redirectPath = "/collaboration";
-      } else if (
-        location.state?.from === "project" &&
-        location.state?.projectId
-      ) {
-        redirectPath = `/post/${location.state.projectId}`;
+      if (!response.ok) {
+        const errData = await response.json();
+        alert(errData?.error || "Login failed");
+        return;
       }
 
-      window.location.href = redirectPath;
-    }
-  } else {
-    alert("Login failed");
-  }
-}
+      // Refetch profile after successful login
+      const profileRes = await fetch(`${process.env.REACT_APP_API_URL}/api/profile`, {
+        credentials: "include",
+      });
 
+      if (!profileRes.ok) {
+        alert("Failed to load user profile");
+        return;
+      }
+
+      const profileData = await profileRes.json();
+      setUserInfo(profileData);
+
+      if (profileData.isAdmin) {
+        navigate("/admin");
+      } else {
+        let redirectPath = "/ideas";
+
+        if (location.state?.from === "collaboration") {
+          redirectPath = "/collaboration";
+        } else if (
+          location.state?.from === "project" &&
+          location.state?.projectId
+        ) {
+          redirectPath = `/post/${location.state.projectId}`;
+        }
+
+        navigate(redirectPath);
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      alert("An unexpected error occurred.");
+    }
+  }
 
   return (
     <div className="auth-container">
