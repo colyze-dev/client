@@ -39,7 +39,7 @@ export default function Header() {
   }, [setUserInfo]);
 
   const logout = async () => {
-    await fetch(`${process.env.REACT_APP_API_URL}/api/logout`, {
+    await fetch(`${process.env.REACT_APP_API_URL}/logout`, {
       credentials: "include",
       method: "POST",
     });

@@ -12,7 +12,7 @@ export default function RegisterPage() {
 
   async function register(ev) {
     ev.preventDefault();
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/register`, {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/register`, {
       method: "POST",
       body: JSON.stringify({
         name,
