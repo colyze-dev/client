@@ -28,7 +28,7 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/profile`, {
+    fetch(`${process.env.REACT_APP_API_URL}/api/profile`, {
       credentials: "include",
     })
       .then((res) => res.ok ? res.json() : null)

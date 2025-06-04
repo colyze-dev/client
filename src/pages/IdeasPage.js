@@ -15,13 +15,13 @@ export default function IdeasPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedStage, setSelectedStage] = useState("All");
   const [isLoading, setIsLoading] = useState(true);
+
   const { userInfo } = useContext(UserContext);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!userInfo) {
-      navigate("/login");
-    }
+    if (userInfo === undefined) return; 
+    if (!userInfo) navigate("/login");
   }, [userInfo, navigate]);
 
   useEffect(() => {
@@ -38,14 +38,8 @@ export default function IdeasPage() {
       });
   }, []);
 
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const handleSort = (e) => {
-    setSortBy(e.target.value);
-  };
-
+  const handleSearch = (e) => setSearchQuery(e.target.value);
+  const handleSort = (e) => setSortBy(e.target.value);
   const clearFilters = () => {
     setSelectedTag("All");
     setSelectedStage("All");
@@ -54,10 +48,8 @@ export default function IdeasPage() {
 
   const filteredPosts = posts
     .filter((post) => {
-      const matchesTag =
-        selectedTag === "All" || post.tags?.includes(selectedTag);
-      const matchesStage =
-        selectedStage === "All" || post.stage === selectedStage;
+      const matchesTag = selectedTag === "All" || post.tags?.includes(selectedTag);
+      const matchesStage = selectedStage === "All" || post.stage === selectedStage;
       const matchesSearch =
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.summary.toLowerCase().includes(searchQuery.toLowerCase());
@@ -75,6 +67,16 @@ export default function IdeasPage() {
           return 0;
       }
     });
+
+  if (userInfo === undefined) {
+    // Still checking authentication
+    return (
+      <div className="loading-state">
+        <div className="loader"></div>
+        <p>Checking authentication...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="ideas-page">
@@ -123,19 +125,10 @@ export default function IdeasPage() {
           <div className="filter-section">
             <h3>Project Stage</h3>
             <div className="stage-buttons">
-              {[
-                "All",
-                "Ideation",
-                "Planning",
-                "Development",
-                "Testing",
-                "Deployment",
-              ].map((stage) => (
+              {["All", "Ideation", "Planning", "Development", "Testing", "Deployment"].map((stage) => (
                 <button
                   key={stage}
-                  className={`stage-btn ${
-                    selectedStage === stage ? "active" : ""
-                  }`}
+                  className={`stage-btn ${selectedStage === stage ? "active" : ""}`}
                   onClick={() => setSelectedStage(stage)}
                 >
                   {stage}
@@ -146,10 +139,7 @@ export default function IdeasPage() {
 
           <div className="filter-section">
             <h3>Tags</h3>
-            <FilterBar
-              selectedTag={selectedTag}
-              setSelectedTag={setSelectedTag}
-            />
+            <FilterBar selectedTag={selectedTag} setSelectedTag={setSelectedTag} />
           </div>
 
           <button className="clear-filters" onClick={clearFilters}>
@@ -167,9 +157,7 @@ export default function IdeasPage() {
         <>
           <div className="results-info">
             <p>{filteredPosts.length} projects found</p>
-            {(selectedTag !== "All" ||
-              selectedStage !== "All" ||
-              searchQuery) && (
+            {(selectedTag !== "All" || selectedStage !== "All" || searchQuery) && (
               <button className="clear-filters-mobile" onClick={clearFilters}>
                 Clear Filters
               </button>
